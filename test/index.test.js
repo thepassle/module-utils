@@ -62,6 +62,49 @@ describe('analyze', () => {
       ]);
     });
 
+    it('import default type', () => {
+      const result = imports('import type Foo from "foo";', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'default',
+          name: 'Foo',
+          attributes: [],
+          module: 'foo',
+          isTypeOnly: true,
+        }
+      ]);
+    });
+
+    it('import named type', () => {
+      const result = imports('import type { Foo } from "foo";', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'named',
+          name: 'Foo',
+          module: 'foo',
+          isTypeOnly: true,
+        }
+      ]);
+    });
+
+    it('import named type multiple', () => {
+      const result = imports('import type { Foo, Bar } from "foo";', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'named',
+          name: 'Foo',
+          module: 'foo',
+          isTypeOnly: true,
+        },
+        {
+          kind: 'named',
+          name: 'Bar',
+          module: 'foo',
+          isTypeOnly: true,
+        },
+      ]);
+    });
+
     it('side-effect local', () => {
       const result = imports('import "./foo.js";', 'file.js');
       assert.deepStrictEqual(result, [

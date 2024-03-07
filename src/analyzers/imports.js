@@ -16,7 +16,7 @@ import { analyze } from '../../index.js';
 /**
  * @typedef {{
  *  name: string,
- *  attributes: ImportAttribute[],
+ *  attributes?: ImportAttribute[],
  *  kind: "default" | "named" | "aggregate" | "side-effect",
  *  module: string,
  *  isTypeOnly: boolean
@@ -37,6 +37,7 @@ export function imports(source, filePath) {
     analyze: ({ts, node}) => {
       /**
        * @example import defaultExport from 'foo';
+       * @example import type Foo from 'foo';
        */
       if (hasDefaultImport(node)) {
         const attributes = node.attributes?.elements.map(({name, value}) => ({
@@ -58,6 +59,7 @@ export function imports(source, filePath) {
        * @example import { export1, export2 } from 'foo';
        * @example import { export1 as alias1 } from 'foo';
        * @example import { export1, export2 as alias2 } from 'foo';
+       * @example import type { Foo } from 'foo';
        */
       if (hasNamedImport(node)) {
         node.importClause.namedBindings.elements.forEach(
