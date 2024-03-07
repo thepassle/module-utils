@@ -49,6 +49,159 @@ describe('analyze', () => {
       ]);
     });
 
+    describe('dynamic import', () => {
+      it('dynamic import local', () => {
+        const result = imports('import("./foo.js")', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: '',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          }
+        ]);
+      });
+  
+      it('dynamic import external', () => {
+        const result = imports('import("foo")', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: '',
+            module: 'foo',
+            isTypeOnly: false,
+            attributes: []
+          }
+        ]);
+      });
+  
+      it('dynamic import template literal', () => {
+        const result = imports('import(`./foo.js`)', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: '',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          }
+        ]);
+      });
+  
+      it('ignores dynamic import values template literal', () => {
+        const result = imports('import(`./foo-${bar}-${baz}.js`)', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            attributes: [],
+            isTypeOnly: false,
+            kind: 'dynamic',
+            module: 'foo-*-*.js',
+            name: ''
+          }
+        ]);
+      });
+  
+      it('ignores dynamic import values template literal', () => {
+        const result = imports('import(foo)', 'file.js');
+        assert.deepStrictEqual(result, []);
+      });
+  
+      // @TODO maybe turn this into "./foo-*.js"
+      it('ignores dynamic import values string concat', () => {
+        const result = imports('import("./foo-" + bar + "-" + baz + ".js")', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            attributes: [],
+            isTypeOnly: false,
+            kind: 'dynamic',
+            module: 'foo-*-*.js',
+            name: ''
+          }
+        ]);
+      });
+  
+      it('dynamic import local attributes', () => {
+        const result = imports('import("./foo.js", { with: { type: "json" } })', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: '',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: [{name: 'type', value: 'json'}]
+          }
+        ]);
+      });
+
+
+      it('dynamic import variable assignment', () => {
+        const result = imports('const foo = import("./foo.js")', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: 'foo',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          }
+        ]);
+      });
+
+      it('dynamic import destructure assignment', () => {
+        const result = imports('const { foo, bar } = import("./foo.js")', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: 'foo',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          },
+          {
+            kind: 'dynamic',
+            name: 'bar',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          },
+        ]);
+      });
+
+      it('dynamic import destructure assignment rename', () => {
+        const result = imports('const { foo: bar } = import("./foo.js")', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: 'bar',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          }
+        ]);
+      });
+
+      it('dynamic import destructure assignment rename', () => {
+        const result = imports('const [ foo, bar ] = import("./foo.js")', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: 'foo',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          },
+          {
+            kind: 'dynamic',
+            name: 'bar',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          }
+        ]);
+      });
+    });
+
     it('import attributes', () => {
       const result = imports('import data from "./data.json" with { type: "json" };', 'file.js');
       assert.deepStrictEqual(result, [
