@@ -8,7 +8,7 @@
     "test:watch": "node --test --watch test/index.test.js",
     "lint:types": "tsc",
     "lint:types:watch": "tsc --watch",
-    "prepublishOnly": "tsc && npm test"
+    "prepublishOnly": "npm test"
   },
   "exports": {
     ".": "./index.js",
