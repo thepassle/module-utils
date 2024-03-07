@@ -107,7 +107,6 @@ describe('analyze', () => {
         assert.deepStrictEqual(result, []);
       });
   
-      // @TODO maybe turn this into "./foo-*.js"
       it('ignores dynamic import values string concat', () => {
         const result = imports('import("./foo-" + bar + "-" + baz + ".js")', 'file.js');
         assert.deepStrictEqual(result, [
