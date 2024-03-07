@@ -11,15 +11,16 @@
     "prepublishOnly": "tsc && npm test"
   },
   "exports": {
-    ".": {
-      "types": "./dist-types/index.d.ts",
-      "default": "./index.js"
-    }
+    ".": "./index.js",
+    "./imports.js": "./imports.js",
+    "./exports.js": "./exports.js",
+    "./utils.js": "./utils.js"
   },
   "files": [
     "README.md",
     "dist-types",
-    "index.js"
+    "*.js",
+    "src/**/*.js"
   ],
   "keywords": [],
   "author": "",

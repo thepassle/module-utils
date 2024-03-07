@@ -1,5 +1,5 @@
 - dynamic imports
-  - dynamic import vars + glob
+  - dynamic import vars + glob?
 - barrel files
 - declarations
   - variables
