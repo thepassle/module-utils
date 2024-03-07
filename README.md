@@ -62,6 +62,32 @@ console.log(result);
 
 See the test cases for all supported import/exports.
 
+### Limitations of dynamic imports
+
+For dynamic imports we only resolve the symbol name for the following cases:
+
+```js
+const foo = await import('bar');
+const [ foo ] = await import('bar');
+const { foo } = await import('bar');
+const { foo: baz } = await import('bar');
+```
+
+Additionally, imports with dynamic values will be output as follows:
+```js
+const bar = 'bar';
+import('./foo-' + bar + '.js');
+// "./foo-*.js"
+
+import(`./foo-${bar}.js`);
+// "./foo-*.js"
+```
+
+And imports with only identifiers are skipped:
+```js
+import(foo);
+```
+
 ## Utils
 
 ```js
