@@ -1,0 +1,472 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { analyze } from '../index.js';
+import { imports } from '../src/analyzers/imports.js';
+import { exports } from '../src/analyzers/exports.js';
+
+describe('analyze', () => {
+  const s = 'export const foo = "bar";';
+  const f = 'file.js';
+  
+  it('basic', () => {
+    analyze(s, f, [{
+      name: 'test',
+      start: ({ts, source, filePath, ast, context}) => {
+        assert(ts);
+        assert.deepStrictEqual(context, {});
+        assert.equal(source, s);
+        assert.equal(filePath, f);
+        assert.equal(ast.text, s);
+      },
+      analyze: ({ts, context, node}) => {
+        context.foo = 'bar';
+        assert(ts);
+        assert(node);
+      },
+      end: ({ts, source, filePath, ast, context}) => {
+        assert(ts);
+        assert.deepStrictEqual(context, {
+          foo: 'bar'
+        });
+        assert.equal(source, s);
+        assert.equal(filePath, f);
+        assert.equal(ast.text, s);
+      },
+    }]);
+  });
+
+  describe('imports', () => {
+    it('default', () => {
+      const result = imports('import foo from "./foo.js";', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'default',
+          name: 'foo',
+          module: 'foo.js',
+          isTypeOnly: false,
+          attributes: []
+        }
+      ]);
+    });
+
+    it('import attributes', () => {
+      const result = imports('import data from "./data.json" with { type: "json" };', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'default',
+          name: 'data',
+          attributes: [{name: 'type', value: 'json'}],
+          module: 'data.json',
+          isTypeOnly: false,
+        }
+      ]);
+    });
+
+    it('side-effect local', () => {
+      const result = imports('import "./foo.js";', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'side-effect',
+          module: 'foo.js',
+          isTypeOnly: false,
+        }
+      ]);
+    });
+
+    it('side-effect external', () => {
+      const result = imports('import "foo";', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'side-effect',
+          module: 'foo',
+          isTypeOnly: false,
+        }
+      ]);
+    });
+
+    it('aggregate', () => {
+      const result = imports('import * as foo from "./my-module.js"', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'aggregate',
+          module: 'my-module.js',
+          name: 'foo',
+          isTypeOnly: false,
+        }
+      ]);
+    });
+
+    it('named', () => {
+      const result = imports('import { export1 } from "foo"', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'named',
+          module: 'foo',
+          name: 'export1',
+          isTypeOnly: false,
+        }
+      ]);
+    });
+
+    it('named multiple', () => {
+      const result = imports('import { export1, export2 } from "foo"', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'named',
+          module: 'foo',
+          name: 'export1',
+          isTypeOnly: false,
+        },
+        {
+          kind: 'named',
+          module: 'foo',
+          name: 'export2',
+          isTypeOnly: false,
+        },
+      ]);
+    });
+
+    it('named alias', () => {
+      const result = imports('import { export1 as alias1 } from "foo"', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'named',
+          module: 'foo',
+          name: 'alias1',
+          isTypeOnly: false,
+        }
+      ]);
+    });
+
+    it('named alias default', () => {
+      const result = imports('import { export1 as default } from "foo"', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'named',
+          module: 'foo',
+          name: 'default',
+          isTypeOnly: false,
+        }
+      ]);
+    });
+
+    it('multiple and alias', () => {
+      const result = imports('import { export1, export2 as alias2 } from "foo"', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'named',
+          module: 'foo',
+          name: 'export1',
+          isTypeOnly: false,
+        },
+        {
+          kind: 'named',
+          module: 'foo',
+          name: 'alias2',
+          isTypeOnly: false,
+        },
+      ]);
+    });
+
+    it('type', () => {
+      const result = imports('import type { export1 } from "foo"', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'named',
+          module: 'foo',
+          name: 'export1',
+          isTypeOnly: true,
+        }
+      ]);
+    });
+  })
+
+  describe('exports', () => {
+    ['const', 'var', 'let'].forEach((kind) => {
+      it(`variable ${kind}`, () => {
+        const result = exports(`export ${kind} foo = 1;`, 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'js',
+            name: 'foo',
+            declaration: {
+              module: 'file.js',
+              name: 'foo'
+            }
+          }
+        ]);
+      });
+
+      it(`multiple ${kind}s`, () => {
+        const result = exports(`export ${kind} name1 = 1, name2 = 2;`, 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'js',
+            name: 'name1',
+            declaration: {
+              module: 'file.js',
+              name: 'name1'
+            }
+          },
+          {
+            kind: 'js',
+            name: 'name2',
+            declaration: {
+              module: 'file.js',
+              name: 'name2'
+            }
+          },
+        ]);
+      });
+    });
+
+    
+
+    it('default', () => {
+      const result = exports('export default foo;', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'default',
+          declaration: {
+            module: 'file.js',
+            name: 'foo'
+          }
+        }
+      ]);
+    });
+
+    it('named', () => {
+      const result = exports('export { var1 };', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'var1',
+          declaration: {
+            module: 'file.js',
+            name: 'var1'
+          }
+        }
+      ]);
+    });
+
+    it('named alias', () => {
+      const result = exports('export { var1 as var2 };', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'var1',
+          declaration: {
+            module: 'file.js',
+            name: 'var2'
+          }
+        }
+      ]);
+    });
+
+    it('named multiple', () => {
+      const result = exports('export { var1, var2 };', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'var1',
+          declaration: {
+            module: 'file.js',
+            name: 'var1'
+          }
+        },
+        {
+          kind: 'js',
+          name: 'var2',
+          declaration: {
+            module: 'file.js',
+            name: 'var2'
+          }
+        }
+      ]);
+    });
+
+    it('export * local', () => {
+      const result = exports('export * from "./local.js"', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: '*',
+          declaration: {
+            module: 'local.js',
+            name: '*'
+          }
+        }
+      ]);
+    });
+
+    it('export * alias local', () => {
+      const result = exports('export * as foo from "./local.js"', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: '*',
+          declaration: {
+            module: 'local.js',
+            name: 'foo'
+          }
+        }
+      ]);
+    });
+
+    it('export * alias external', () => {
+      const result = exports('export * as foo from "bar"', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: '*',
+          declaration: {
+            package: 'bar',
+            name: 'foo'
+          }
+        }
+      ]);
+    });
+
+    it('export * external', () => {
+      const result = exports('export * from "foo"', 'file.js');
+
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: '*',
+          declaration: {
+            package: 'foo',
+            name: '*'
+          }
+        }
+      ]);
+    });
+
+    it('reexport local', () => {
+      const result = exports('export { var1 } from "./foo.js";', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'var1',
+          declaration: {
+            module: 'foo.js',
+            name: 'var1'
+          }
+        }
+      ]);
+    });
+
+    it('reexport external', () => {
+      const result = exports('export { var1 } from "foo";', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'var1',
+          declaration: {
+            package: 'foo',
+            name: 'var1'
+          }
+        }
+      ]);
+    });
+
+    it('reexport default', () => {
+      const result = exports('export { default } from "foo";', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'default',
+          declaration: {
+            package: 'foo',
+            name: 'default'
+          }
+        }
+      ]);
+    });
+
+    it('reexport external alias', () => {
+      const result = exports('export { var1 as var2 } from "foo";', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'var1',
+          declaration: {
+            package: 'foo',
+            name: 'var2'
+          }
+        }
+      ]);
+    });
+
+    it('reexport local alias', () => {
+      const result = exports('export { var1 as var2 } from "./foo.js";', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'var1',
+          declaration: {
+            module: 'foo.js',
+            name: 'var2'
+          }
+        }
+      ]);
+    });
+
+    it('export function', () => {
+      const result = exports('export function foo() {}', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'foo',
+          declaration: {
+            module: 'file.js',
+            name: 'foo'
+          }
+        }
+      ]);
+    });
+
+    it('export default function', () => {
+      const result = exports('export default function foo() {}', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'default',
+          declaration: {
+            module: 'file.js',
+            name: 'foo'
+          }
+        }
+      ]);
+    });
+
+    it('export class', () => {
+      const result = exports('export class Foo {}', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'Foo',
+          declaration: {
+            module: 'file.js',
+            name: 'Foo'
+          }
+        }
+      ]);
+    });
+
+    it('export default class', () => {
+      const result = exports('export default class Foo {}', 'file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: 'default',
+          declaration: {
+            module: 'file.js',
+            name: 'Foo'
+          }
+        }
+      ]);
+    });
+  });
+});

@@ -1,0 +1,31 @@
+{
+  "name": "@thepassle/module-utils",
+  "version": "0.0.1",
+  "description": "Module related utils",
+  "scripts": {
+    "start": "node --watch index.js",
+    "test": "node --test --experimental-test-coverage test/index.test.js",
+    "test:watch": "node --test --watch test/index.test.js",
+    "lint:types": "tsc",
+    "lint:types:watch": "tsc --watch",
+    "prepublishOnly": "tsc && npm test"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./index.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist-types",
+    "index.js"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "typescript": "^5.4.2"
+  }
+}
