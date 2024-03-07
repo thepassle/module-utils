@@ -5,7 +5,7 @@ import {
   hasExportModifier,
   hasDefaultModifier,
 } from "../ast/exports.js";
-import { isBareModuleSpecifier, toUnix } from "../utils.js"
+import { isBareModuleSpecifier } from "../utils.js"
 import { analyze } from "../../index.js";
 
 /**
@@ -105,7 +105,7 @@ export function exports(source, filePath) {
             if (isBareModuleSpecifier(node.moduleSpecifier.text)) {
               _export.declaration.package = node.moduleSpecifier.text;
             } else {
-              _export.declaration.module = toUnix(path.normalize(node.moduleSpecifier.text));
+              _export.declaration.module = path.normalize(node.moduleSpecifier.text);
             }
             exports.push(_export);
           }
@@ -130,7 +130,7 @@ export function exports(source, filePath) {
               if (isBareModuleSpecifier(node.moduleSpecifier.text)) {
                 _export.declaration.package = node.moduleSpecifier.text;
               } else {
-                _export.declaration.module = toUnix(path.normalize(node.moduleSpecifier.text));
+                _export.declaration.module = path.normalize(node.moduleSpecifier.text);
               }
               exports.push(_export);
             });
