@@ -88,6 +88,22 @@ And imports with only identifiers are skipped:
 import(foo);
 ```
 
+## Barrel files
+
+```js
+import { barrelFile } from '@thepassle/module-utils/barrel-file.js';
+
+const source = `
+  export {foo} from 'foo';
+  export {bar} from 'bar';
+  export {baz} from 'baz';
+`;
+
+const result = barrelFile(source, 'file.js', {amountOfExportsToConsiderModuleAsBarrel: 2});
+
+console.log(result); // true
+```
+
 ## Utils
 
 ```js
