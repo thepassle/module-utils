@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import { analyze } from '../index.js';
 import { imports } from '../src/analyzers/imports.js';
 import { exports } from '../src/analyzers/exports.js';
+import { barrelFile } from '../src/analyzers/barrel-file.js';
 
 describe('analyze', () => {
   const s = 'export const foo = "bar";';
@@ -33,6 +34,30 @@ describe('analyze', () => {
         assert.equal(ast.text, s);
       },
     }]);
+  });
+
+  describe('barrel file', () => {
+    it('default', () => {
+      const result = barrelFile(`
+        export {foo} from 'foo';
+        export {bar} from 'bar';
+        export {baz} from 'baz';
+      `, 'file.js', {amountOfExportsToConsiderModuleAsBarrel: 2});
+
+      assert.equal(result, true);
+    });
+
+    it('more declarations than exports', () => {
+      const result = barrelFile(`
+        const foo = 1;
+        const bar = 1;
+        const baz = 1;
+        export {foo} from 'foo';
+        export {bar} from 'bar';
+      `, 'file.js', {amountOfExportsToConsiderModuleAsBarrel: 2});
+
+      assert.equal(result, false);
+    });
   });
 
   describe('imports', () => {
