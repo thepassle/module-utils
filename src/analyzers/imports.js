@@ -44,7 +44,6 @@ export function imports(source, filePath) {
     name: 'analyze-imports',
     analyze: ({ts, node}) => {
 
-
       if (isDynamicImport(node)) {
         /**
          * @example import(foo);
