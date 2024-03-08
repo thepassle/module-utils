@@ -205,6 +205,72 @@ describe('analyze', () => {
         ]);
       });
 
+      it('dynamic import rest object', () => {
+        const result = imports('const { ...foo } = import("./foo.js")', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: 'foo',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          }
+        ]);
+      });
+
+      it('dynamic import rest object', () => {
+        const result = imports('const { foo, ...bar } = import("./foo.js")', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: 'foo',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          },
+          {
+            kind: 'dynamic',
+            name: 'bar',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          }
+        ]);
+      });
+
+      it('dynamic import rest array', () => {
+        const result = imports('const [ ...foo ] = import("./foo.js")', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: 'foo',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          }
+        ]);
+      });
+
+      it('dynamic import rest array', () => {
+        const result = imports('const [ foo, ...bar ] = import("./foo.js")', 'file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: 'foo',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          },
+          {
+            kind: 'dynamic',
+            name: 'bar',
+            module: 'foo.js',
+            isTypeOnly: false,
+            attributes: []
+          }
+        ]);
+      });
+
       it('dynamic import destructure assignment rename', () => {
         const result = imports('const [ foo, bar ] = import("./foo.js")', 'file.js');
         assert.deepStrictEqual(result, [

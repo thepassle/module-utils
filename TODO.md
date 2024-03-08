@@ -1,6 +1,3 @@
-- dynamic imports
-  - dynamic import vars + glob?
-- barrel files
 - declarations
   - variables
   - functions
