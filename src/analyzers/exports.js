@@ -9,18 +9,25 @@ import { isBareModuleSpecifier } from "../utils.js"
 import { analyze } from "../../index.js";
 
 /**
+ * @typedef {import('../../index.js').Plugin} Plugin
  * @typedef {{
  *  name: string,
  *  kind: "js",
  *  declaration: {
- *   name: string,
+ *   name?: string,
  *   module?: string,
  *   package?: string
  *  },
- *  isTypeOnly: boolean
+ *  isTypeOnly?: boolean
  * }} Export
  */
 
+/**
+ * 
+ * @param {string} filePath 
+ * @param {Array<Export>} exports 
+ * @returns {Plugin}
+ */
 export function analyzeExports(filePath, exports) {
   return {
     name: "analyze-exports",
@@ -33,6 +40,7 @@ export function analyzeExports(filePath, exports) {
       if (hasExportModifier(node) && ts.isVariableStatement(node)) {
         node?.declarationList?.declarations?.forEach((declaration) => {
           const _export = {
+            /** @type {'js'} */
             kind: "js",
             name: declaration.name.getText(),
             declaration: {
@@ -50,10 +58,11 @@ export function analyzeExports(filePath, exports) {
        */
       if (ts.isExportAssignment(node)) {
         const _export = {
+          /** @type {'js'} */
           kind: "js",
           name: "default",
           declaration: {
-            name: node.expression.text,
+            name: /** @type {any} */ (node.expression).text,
             module: filePath,
           },
         };
@@ -66,8 +75,12 @@ export function analyzeExports(filePath, exports) {
          * @example export { var1 as var2 };
          */
         if (hasNamedExports(node) && !isReexport(node)) {
-          node.exportClause?.elements?.forEach((element) => {
+          /**
+           * @param {any} element 
+           */
+          function createExport(element) {
             const _export = {
+              /** @type {'js'} */
               kind: "js",
               name: element.propertyName?.getText?.() ?? element.name?.getText(),
               declaration: {
@@ -77,7 +90,8 @@ export function analyzeExports(filePath, exports) {
             };
 
             exports.push(_export);
-          });
+          }
+          /** @type {any} */ (node.exportClause)?.elements?.forEach(createExport);
         }
 
         /**
@@ -86,18 +100,21 @@ export function analyzeExports(filePath, exports) {
          * @example export * as foo from './my-module.js';
          */
         if (isReexport(node) && !hasNamedExports(node)) {
+          /** @type {Export} */
           const _export = {
+            /** @type {'js'} */
             kind: "js",
             name: "*",
             declaration: {
-              name: node.exportClause?.name?.text ?? "*",
+              name: /** @type {any} */ (node.exportClause)?.name?.text ?? "*",
             },
           };
 
-          if (isBareModuleSpecifier(node.moduleSpecifier.text)) {
-            _export.declaration.package = node.moduleSpecifier.text;
+          const moduleSpecifier = /** @type {any} */ (node.moduleSpecifier)?.text;
+          if (isBareModuleSpecifier(moduleSpecifier)) {
+            _export.declaration.package = moduleSpecifier;
           } else {
-            _export.declaration.module = path.normalize(node.moduleSpecifier.text);
+            _export.declaration.module = path.normalize(moduleSpecifier);
           }
           exports.push(_export);
         }
@@ -109,23 +126,32 @@ export function analyzeExports(filePath, exports) {
          * @example export { var1 as var2 } from './my-module.js';
          */
         if (isReexport(node) && hasNamedExports(node)) {
-          node.exportClause?.elements?.forEach((element) => {
+          /**
+           * @param {any} element 
+           */
+          function createExport(element) {
             const name = element.propertyName?.getText?.() ?? element.name?.getText()
+            /**
+             * @type {Export}
+             */
             const _export = {
+              /** @type {'js'} */
               kind: "js",
               name,
               declaration: {
                 name: element.name?.text ?? element.propertyName?.getText()
               },
             };
-
-            if (isBareModuleSpecifier(node.moduleSpecifier.text)) {
-              _export.declaration.package = node.moduleSpecifier.text;
+            
+            const moduleSpecifier = /** @type {any} */ (node.moduleSpecifier)?.text;
+            if (isBareModuleSpecifier(moduleSpecifier)) {
+              _export.declaration.package = moduleSpecifier;
             } else {
-              _export.declaration.module = path.normalize(node.moduleSpecifier.text);
+              _export.declaration.module = path.normalize(moduleSpecifier);
             }
             exports.push(_export);
-          });
+          }
+          /** @type {any} */ (node.exportClause)?.elements?.forEach(createExport);
         }
       }
 
@@ -137,6 +163,7 @@ export function analyzeExports(filePath, exports) {
         if (hasExportModifier(node)) {
           const isDefault = hasDefaultModifier(node);
           const _export = {
+            /** @type {'js'} */
             kind: "js",
             name: isDefault ? "default" : node.name?.getText() || "",
             declaration: {
@@ -156,6 +183,7 @@ export function analyzeExports(filePath, exports) {
         if (hasExportModifier(node)) {
           const isDefault = hasDefaultModifier(node);
           const _export = {
+            /** @type {'js'} */
             kind: "js",
             name: isDefault ? "default" : node?.name?.text || "",
             declaration: {

@@ -1,6 +1,6 @@
 {
   "name": "@thepassle/module-utils",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Module related utils",
   "scripts": {
     "start": "node --watch index.js",
@@ -8,14 +8,29 @@
     "test:watch": "node --test --watch test/index.test.js",
     "lint:types": "tsc",
     "lint:types:watch": "tsc --watch",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "tsc && npm test"
   },
   "exports": {
-    ".": "./index.js",
-    "./imports.js": "./imports.js",
-    "./exports.js": "./exports.js",
-    "./barrel-file.js": "./barrel-file.js",
-    "./utils.js": "./utils.js"
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./index.js"
+    },
+    "./imports.js": {
+      "types": "./dist-types/imports.d.ts",
+      "default": "./imports.js"
+    },
+    "./exports.js": {
+      "types": "./dist-types/exports.d.ts",
+      "default": "./exports.js"
+    },
+    "./barrel-file.js": {
+      "types": "./dist-types/barrel-file.d.ts",
+      "default": "./barrel-file.js"
+    },
+    "./utils.js": {
+      "types": "./dist-types/utils.d.ts",
+      "default": "./utils.js"
+    }
   },
   "files": [
     "README.md",

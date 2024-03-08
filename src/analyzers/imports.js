@@ -23,16 +23,15 @@ import { analyze } from '../../index.js';
 
 /**
  * @typedef {{
- *  name: string,
+ *  name?: string,
  *  attributes?: ImportAttribute[],
- *  kind: "default" | "named" | "aggregate" | "side-effect",
+ *  kind: "default" | "named" | "aggregate" | "side-effect" | "dynamic",
  *  module: string,
  *  isTypeOnly: boolean
  * }} Import
  */
 
 /**
- * 
  * @param {string} source 
  * @param {string} filePath 
  * @returns {Import[]}
@@ -63,11 +62,17 @@ export function imports(source, filePath) {
           const object = node.arguments[1];
           const attributesObj = object?.properties?.[0];
           if (attributesObj.initializer?.properties) {
-            attributesObj.initializer.properties.forEach((property) => {
+
+            /**
+             * @param {any} property 
+             */
+            function createAttribute(property) {
               const name = property.name.text;
               const value = property.initializer.text;
               attributes.push({name, value});
-            });
+            }
+
+            attributesObj.initializer.properties.forEach(createAttribute);
           }
         }
 
@@ -142,6 +147,7 @@ export function imports(source, filePath) {
 
         for (const name of names) {
           const importTemplate = {
+            /** @type {'dynamic'} */
             kind: 'dynamic',
             name,
             attributes,
@@ -157,12 +163,15 @@ export function imports(source, filePath) {
        * @example import type Foo from 'foo';
        */
       if (hasDefaultImport(node)) {
-        const attributes = node.attributes?.elements.map(({name, value}) => ({
-          name: name.text,
-          value: value.text
-        })) || [];
+
+        /**
+         * @param {any} param
+         */
+        const mapAttribute = ({name, value}) => ({name: name.text, value: value.text});
+        const attributes = node.attributes?.elements.map(mapAttribute) || [];
         const importTemplate = {
           name: node.importClause?.name?.text,
+          /** @type {'default'} */
           kind: "default",
           module: path.normalize(node.moduleSpecifier.text),
           attributes,
@@ -179,17 +188,21 @@ export function imports(source, filePath) {
        * @example import type { Foo } from 'foo';
        */
       if (hasNamedImport(node)) {
-        node.importClause.namedBindings.elements.forEach(
-          (element) => {
-            const importTemplate = {
-              name: element.name.text,
-              kind: "named",
-              module: path.normalize(node.moduleSpecifier.text),
-              isTypeOnly: !!node?.importClause?.isTypeOnly,
-            };
-            imports.push(importTemplate);
-          }
-        );
+        /**
+         * @param {any} element 
+         */
+        function createNamedImport(element) {
+          const importTemplate = {
+            name: element.name.text,
+            /** @type {'named'} */
+            kind: "named",
+            module: path.normalize(node.moduleSpecifier.text),
+            isTypeOnly: !!node?.importClause?.isTypeOnly,
+          };
+          imports.push(importTemplate);
+        }
+
+        node.importClause.namedBindings.elements.forEach(createNamedImport);
       }
 
       /**
@@ -198,6 +211,7 @@ export function imports(source, filePath) {
       if (hasAggregatingImport(node)) {
         const importTemplate = {
           name: node.importClause.namedBindings.name.text,
+          /** @type {'aggregate'} */
           kind: "aggregate",
           module: path.normalize(node.moduleSpecifier.text),
           isTypeOnly: !!node?.importClause?.isTypeOnly,
@@ -210,6 +224,7 @@ export function imports(source, filePath) {
        */
       if (hasSideEffectImport(node)) {
         const importTemplate = {
+          /** @type {'side-effect'} */
           kind: "side-effect",
           module: path.normalize(node.moduleSpecifier.text),
           isTypeOnly: false,

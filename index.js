@@ -12,7 +12,7 @@ import ts from 'typescript';
  *  }) => void,
  *  analyze?: (params: { 
  *   ts: typeof ts
- *   node: ts.Node, 
+ *   node: any, 
  *   source: string, 
  *   filePath: string, 
  *   ast: ts.SourceFile, 
