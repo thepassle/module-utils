@@ -1,6 +1,6 @@
 {
   "name": "@thepassle/module-utils",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Module related utils",
   "scripts": {
     "start": "node --watch index.js",

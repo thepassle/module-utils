@@ -324,6 +324,7 @@ describe('analyze', () => {
         {
           kind: 'named',
           name: 'Foo',
+          declaration: 'Foo',
           module: 'foo',
           isTypeOnly: true,
         }
@@ -336,12 +337,14 @@ describe('analyze', () => {
         {
           kind: 'named',
           name: 'Foo',
+          declaration: 'Foo',
           module: 'foo',
           isTypeOnly: true,
         },
         {
           kind: 'named',
           name: 'Bar',
+          declaration: 'Bar',
           module: 'foo',
           isTypeOnly: true,
         },
@@ -375,6 +378,7 @@ describe('analyze', () => {
       assert.deepStrictEqual(result, [
         {
           kind: 'aggregate',
+          declaration: '*',
           module: 'my-module.js',
           name: 'foo',
           isTypeOnly: false,
@@ -388,6 +392,7 @@ describe('analyze', () => {
         {
           kind: 'named',
           module: 'foo',
+          declaration: 'export1',
           name: 'export1',
           isTypeOnly: false,
         }
@@ -401,12 +406,14 @@ describe('analyze', () => {
           kind: 'named',
           module: 'foo',
           name: 'export1',
+          declaration: 'export1',
           isTypeOnly: false,
         },
         {
           kind: 'named',
           module: 'foo',
           name: 'export2',
+          declaration: 'export2',
           isTypeOnly: false,
         },
       ]);
@@ -419,6 +426,7 @@ describe('analyze', () => {
           kind: 'named',
           module: 'foo',
           name: 'alias1',
+          declaration: 'export1',
           isTypeOnly: false,
         }
       ]);
@@ -431,6 +439,7 @@ describe('analyze', () => {
           kind: 'named',
           module: 'foo',
           name: 'default',
+          declaration: 'export1',
           isTypeOnly: false,
         }
       ]);
@@ -443,12 +452,14 @@ describe('analyze', () => {
           kind: 'named',
           module: 'foo',
           name: 'export1',
+          declaration: 'export1',
           isTypeOnly: false,
         },
         {
           kind: 'named',
           module: 'foo',
           name: 'alias2',
+          declaration: 'export2',
           isTypeOnly: false,
         },
       ]);
@@ -459,6 +470,7 @@ describe('analyze', () => {
       assert.deepStrictEqual(result, [
         {
           kind: 'named',
+          declaration: 'export1',
           module: 'foo',
           name: 'export1',
           isTypeOnly: true,

@@ -22,8 +22,11 @@ import { analyze } from '../../index.js';
  */
 
 /**
+ * declaration = the exported symbol, or in the case of an aggregate it will be '*'
+ * name = alias
  * @typedef {{
  *  name?: string,
+ *  declaration?: string,
  *  attributes?: ImportAttribute[],
  *  kind: "default" | "named" | "aggregate" | "side-effect" | "dynamic",
  *  module: string,
@@ -194,6 +197,7 @@ export function imports(source, filePath) {
         function createNamedImport(element) {
           const importTemplate = {
             name: element.name.text,
+            declaration: element?.propertyName?.text ?? element.name.text,
             /** @type {'named'} */
             kind: "named",
             module: path.normalize(node.moduleSpecifier.text),
@@ -211,6 +215,7 @@ export function imports(source, filePath) {
       if (hasAggregatingImport(node)) {
         const importTemplate = {
           name: node.importClause.namedBindings.name.text,
+          declaration: '*',
           /** @type {'aggregate'} */
           kind: "aggregate",
           module: path.normalize(node.moduleSpecifier.text),
