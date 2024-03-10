@@ -38,6 +38,7 @@ console.log(result);
 // {
 //   kind: 'default',
 //   name: 'foo',
+//   declaration: 'foo',
 //   module: 'foo.js',
 //   isTypeOnly: false,
 //   attributes: []
@@ -69,7 +70,9 @@ For dynamic imports we only resolve the symbol name for the following cases:
 ```js
 const foo = await import('bar');
 const [ foo ] = await import('bar');
+const [ foo, ...bar ] = await import('bar');
 const { foo } = await import('bar');
+const { foo, ...bar } = await import('bar');
 const { foo: baz } = await import('bar');
 ```
 
