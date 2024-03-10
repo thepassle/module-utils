@@ -22,6 +22,13 @@ import { analyze } from '../../index.js';
  */
 
 /**
+ * @typedef {{
+ *  name: string,
+ *  declaration: string
+ * }} Identifier
+ */
+
+/**
  * declaration = the exported symbol, or in the case of an aggregate it will be '*'
  * name = alias
  * @typedef {{
@@ -108,7 +115,7 @@ export function imports(source, filePath) {
         }
 
         /**
-         * @type {string[]}
+         * @type {Identifier[]}
          */
         let names = [];
         if (ts.isVariableDeclaration(node.parent)) {
@@ -116,7 +123,10 @@ export function imports(source, filePath) {
            * @example const foo = import('./foo.js');
            */
           if (ts.isIdentifier(node?.parent?.name)) {
-            names = [node.parent.name.text];
+            names = [{
+              name: node.parent.name.text,
+              declaration: node.parent.name.text,
+            }];
           }
 
           /**
@@ -126,7 +136,10 @@ export function imports(source, filePath) {
             for (const element of node.parent.name.elements) {
               if (ts.isBindingElement(element)) {
                 if (ts.isIdentifier(element.name)) {
-                  names.push(element.name.text);
+                  names.push({
+                    name: element.name.text,
+                    declaration: /** @type {import('typescript').Identifier} */ (element?.propertyName)?.text ?? element.name.text,
+                  });
                 }
               }
             }
@@ -138,21 +151,25 @@ export function imports(source, filePath) {
           if (ts.isArrayBindingPattern(node?.parent?.name)) {
             for (const element of node.parent.name?.elements) {
               if (ts.isIdentifier(element.name)) {
-                names.push(element.name.text);
+                names.push({
+                  name: element.name.text,
+                  declaration: element.name.text
+                });
               }
             }
           }
         }
         
         if (!names.length) {
-          names = [''];
+          names = [{ name: '', declaration: ''}];
         }
 
-        for (const name of names) {
+        for (const {name, declaration} of names) {
           const importTemplate = {
             /** @type {'dynamic'} */
             kind: 'dynamic',
             name,
+            declaration,
             attributes,
             module,
             isTypeOnly: false,
@@ -174,6 +191,7 @@ export function imports(source, filePath) {
         const attributes = node.attributes?.elements.map(mapAttribute) || [];
         const importTemplate = {
           name: node.importClause?.name?.text,
+          declaration: node.importClause?.name?.text,
           /** @type {'default'} */
           kind: "default",
           module: path.normalize(node.moduleSpecifier.text),
