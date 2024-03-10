@@ -68,6 +68,7 @@ describe('analyze', () => {
           kind: 'default',
           name: 'foo',
           module: 'foo.js',
+          declaration: 'foo',
           isTypeOnly: false,
           attributes: []
         }
@@ -81,6 +82,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: '',
+            declaration: '',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -94,6 +96,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: '',
+            declaration: '',
             module: 'foo',
             isTypeOnly: false,
             attributes: []
@@ -107,6 +110,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: '',
+            declaration: '',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -122,7 +126,8 @@ describe('analyze', () => {
             isTypeOnly: false,
             kind: 'dynamic',
             module: 'foo-*-*.js',
-            name: ''
+            name: '',
+            declaration: '',
           }
         ]);
       });
@@ -140,7 +145,8 @@ describe('analyze', () => {
             isTypeOnly: false,
             kind: 'dynamic',
             module: 'foo-*-*.js',
-            name: ''
+            name: '',
+            declaration: '',
           }
         ]);
       });
@@ -151,6 +157,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: '',
+            declaration: '',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: [{name: 'type', value: 'json'}]
@@ -165,6 +172,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'foo',
+            declaration: 'foo',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -178,6 +186,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'foo',
+            declaration: 'foo',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -185,6 +194,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'bar',
+            declaration: 'bar',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -198,6 +208,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'bar',
+            declaration: 'foo',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -211,6 +222,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'foo',
+            declaration: 'foo',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -224,6 +236,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'foo',
+            declaration: 'foo',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -231,6 +244,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'bar',
+            declaration: 'bar',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -244,6 +258,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'foo',
+            declaration: 'foo',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -257,6 +272,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'foo',
+            declaration: 'foo',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -264,6 +280,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'bar',
+            declaration: 'bar',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -277,6 +294,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'foo',
+            declaration: 'foo',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -284,6 +302,7 @@ describe('analyze', () => {
           {
             kind: 'dynamic',
             name: 'bar',
+            declaration: 'bar',
             module: 'foo.js',
             isTypeOnly: false,
             attributes: []
@@ -298,6 +317,7 @@ describe('analyze', () => {
         {
           kind: 'default',
           name: 'data',
+          declaration: 'data',
           attributes: [{name: 'type', value: 'json'}],
           module: 'data.json',
           isTypeOnly: false,
@@ -311,6 +331,7 @@ describe('analyze', () => {
         {
           kind: 'default',
           name: 'Foo',
+          declaration: 'Foo',
           attributes: [],
           module: 'foo',
           isTypeOnly: true,
