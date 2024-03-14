@@ -1,4 +1,4 @@
-import path from "path";
+import { normalize } from "pathe";
 import {
   isReexport,
   hasNamedExports,
@@ -114,7 +114,7 @@ export function analyzeExports(filePath, exports) {
           if (isBareModuleSpecifier(moduleSpecifier)) {
             _export.declaration.package = moduleSpecifier;
           } else {
-            _export.declaration.module = path.normalize(moduleSpecifier);
+            _export.declaration.module = normalize(moduleSpecifier);
           }
           exports.push(_export);
         }
@@ -147,7 +147,7 @@ export function analyzeExports(filePath, exports) {
             if (isBareModuleSpecifier(moduleSpecifier)) {
               _export.declaration.package = moduleSpecifier;
             } else {
-              _export.declaration.module = path.normalize(moduleSpecifier);
+              _export.declaration.module = normalize(moduleSpecifier);
             }
             exports.push(_export);
           }

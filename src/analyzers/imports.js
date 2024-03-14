@@ -1,4 +1,4 @@
-import path from 'path';
+import { normalize } from 'pathe';
 import { 
   hasDefaultImport, 
   hasNamedImport, 
@@ -92,7 +92,7 @@ export function imports(source, filePath) {
          * @example import(`./foo.js`)
          */
         if (ts.isStringLiteral(node.arguments[0]) || ts.isNoSubstitutionTemplateLiteral(node.arguments[0])) {
-          module = path.normalize(node.arguments[0].text);
+          module = normalize(node.arguments[0].text);
         }
 
         /**
@@ -104,14 +104,14 @@ export function imports(source, filePath) {
           for (const span of node.arguments[0].templateSpans) {
             result.push(span.literal.text);
           }
-          module = path.normalize(result.join('*'));
+          module = normalize(result.join('*'));
         }
 
         /**
          * @example import('./foo-' + bar + '-' + baz + '.js');
          */
         if (ts.isBinaryExpression(node?.arguments?.[0])) {
-          module = path.normalize(handleConcatenatedString(node.arguments[0]));
+          module = normalize(handleConcatenatedString(node.arguments[0]));
         }
 
         /**
@@ -194,7 +194,7 @@ export function imports(source, filePath) {
           declaration: node.importClause?.name?.text,
           /** @type {'default'} */
           kind: "default",
-          module: path.normalize(node.moduleSpecifier.text),
+          module: normalize(node.moduleSpecifier.text),
           attributes,
           isTypeOnly: !!node?.importClause?.isTypeOnly,
         };
@@ -218,7 +218,7 @@ export function imports(source, filePath) {
             declaration: element?.propertyName?.text ?? element.name.text,
             /** @type {'named'} */
             kind: "named",
-            module: path.normalize(node.moduleSpecifier.text),
+            module: normalize(node.moduleSpecifier.text),
             isTypeOnly: !!node?.importClause?.isTypeOnly,
           };
           imports.push(importTemplate);
@@ -236,7 +236,7 @@ export function imports(source, filePath) {
           declaration: '*',
           /** @type {'aggregate'} */
           kind: "aggregate",
-          module: path.normalize(node.moduleSpecifier.text),
+          module: normalize(node.moduleSpecifier.text),
           isTypeOnly: !!node?.importClause?.isTypeOnly,
         };
         imports.push(importTemplate);
@@ -249,7 +249,7 @@ export function imports(source, filePath) {
         const importTemplate = {
           /** @type {'side-effect'} */
           kind: "side-effect",
-          module: path.normalize(node.moduleSpecifier.text),
+          module: normalize(node.moduleSpecifier.text),
           isTypeOnly: false,
         };
         imports.push(importTemplate);

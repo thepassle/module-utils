@@ -1,0 +1,11 @@
+<html>
+  <body>
+    <script type="module">
+      import { exports } from './browser/exports.js';
+      console.log(exports(`
+        const i = 'abc';
+        export{i as Foo};
+      `, ''));
+    </script>
+  </body>
+</html>
