@@ -203,7 +203,7 @@ export function analyzeExports(filePath, exports) {
  * @param {string} filePath
  * @returns {Export[]}
  */
-export function exports(source, filePath) {
+export function exports(source, filePath = '') {
   /** @type {Export[]} */
   const exports = [];
 

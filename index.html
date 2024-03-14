@@ -4,6 +4,7 @@
       import { exports } from './browser/exports.js';
       console.log(exports(`
         const i = 'abc';
+        export default { a: 1 };
         export{i as Foo};
       `, ''));
     </script>

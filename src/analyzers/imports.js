@@ -46,7 +46,7 @@ import { analyze } from '../../index.js';
  * @param {string} filePath 
  * @returns {Import[]}
  */
-export function imports(source, filePath) {
+export function imports(source, filePath = '') {
   /** @type {Import[]} */
   const imports = [];
   analyze(source, filePath, [{
