@@ -1,6 +1,6 @@
 {
   "name": "@thepassle/module-utils",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Module related utils",
   "scripts": {
     "start": "node --watch index.js",
@@ -23,12 +23,12 @@
     },
     "./exports.js": {
       "types": "./dist-types/exports.d.ts",
-      "browser": "./browser/imports.js",
+      "browser": "./browser/exports.js",
       "default": "./exports.js"
     },
     "./barrel-file.js": {
       "types": "./dist-types/barrel-file.d.ts",
-      "browser": "./browser/imports.js",
+      "browser": "./browser/barrel-file.js",
       "default": "./barrel-file.js"
     },
     "./utils.js": {
