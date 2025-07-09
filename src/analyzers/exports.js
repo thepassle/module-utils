@@ -5,7 +5,7 @@ import {
   hasExportModifier,
   hasDefaultModifier,
 } from "../ast/exports.js";
-import { isBareModuleSpecifier } from "../utils.js"
+import { isBareModuleSpecifier, createPath } from "../utils.js"
 import { analyze } from "../../index.js";
 
 /**
@@ -114,8 +114,9 @@ export function analyzeExports(filePath, exports) {
           if (isBareModuleSpecifier(moduleSpecifier)) {
             _export.declaration.package = moduleSpecifier;
           } else {
-            _export.declaration.module = normalize(moduleSpecifier);
+            _export.declaration.module = createPath(moduleSpecifier, filePath);
           }
+
           exports.push(_export);
         }
 
@@ -142,12 +143,12 @@ export function analyzeExports(filePath, exports) {
                 name: element.name?.text ?? element.propertyName?.getText()
               },
             };
-            
+
             const moduleSpecifier = /** @type {any} */ (node.moduleSpecifier)?.text;
             if (isBareModuleSpecifier(moduleSpecifier)) {
               _export.declaration.package = moduleSpecifier;
             } else {
-              _export.declaration.module = normalize(moduleSpecifier);
+              _export.declaration.module = createPath(moduleSpecifier, filePath);
             }
             exports.push(_export);
           }

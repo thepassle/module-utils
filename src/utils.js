@@ -1,3 +1,5 @@
+import { normalize } from "pathe";
+
 /**
  * @template T
  * @param {Array<T>} arr 
@@ -22,3 +24,17 @@ export const isBareModuleSpecifier = (specifier) => !!specifier?.replace(/'/g, '
  * @returns {boolean}
  */
 export const isScopedPackage = (specifier) => specifier.startsWith('@');
+
+/**
+ * @param {string} moduleSpecifier 
+ * @param {string} filePath 
+ * @returns {string}
+ */
+export function createPath(moduleSpecifier, filePath) {
+  const normalized = normalize(moduleSpecifier);
+  if (URL.canParse(filePath)) {
+    return new URL(normalized, filePath).href;
+  } else {
+    return normalized;
+  }
+}

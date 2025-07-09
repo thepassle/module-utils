@@ -8,23 +8,23 @@ import { barrelFile } from '../src/analyzers/barrel-file.js';
 describe('analyze', () => {
   const s = 'export const foo = "bar";';
   const f = 'file.js';
-  
+
   it('basic', () => {
     analyze(s, f, [{
       name: 'test',
-      start: ({ts, source, filePath, ast, context}) => {
+      start: ({ ts, source, filePath, ast, context }) => {
         assert(ts);
         assert.deepStrictEqual(context, {});
         assert.equal(source, s);
         assert.equal(filePath, f);
         assert.equal(ast.text, s);
       },
-      analyze: ({ts, context, node}) => {
+      analyze: ({ ts, context, node }) => {
         context.foo = 'bar';
         assert(ts);
         assert(node);
       },
-      end: ({ts, source, filePath, ast, context}) => {
+      end: ({ ts, source, filePath, ast, context }) => {
         assert(ts);
         assert.deepStrictEqual(context, {
           foo: 'bar'
@@ -42,7 +42,7 @@ describe('analyze', () => {
         export {foo} from 'foo';
         export {bar} from 'bar';
         export {baz} from 'baz';
-      `, 'file.js', {amountOfExportsToConsiderModuleAsBarrel: 2});
+      `, 'file.js', { amountOfExportsToConsiderModuleAsBarrel: 2 });
 
       assert.equal(result, true);
     });
@@ -54,7 +54,7 @@ describe('analyze', () => {
         const baz = 1;
         export {foo} from 'foo';
         export {bar} from 'bar';
-      `, 'file.js', {amountOfExportsToConsiderModuleAsBarrel: 2});
+      `, 'file.js', { amountOfExportsToConsiderModuleAsBarrel: 2 });
 
       assert.equal(result, false);
     });
@@ -68,6 +68,20 @@ describe('analyze', () => {
           kind: 'default',
           name: 'foo',
           module: 'foo.js',
+          declaration: 'foo',
+          isTypeOnly: false,
+          attributes: []
+        }
+      ]);
+    });
+    
+    it('default url', () => {
+      const result = imports('import foo from "./foo.js";', 'http://foo.com/node_modules/foo/file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'default',
+          name: 'foo',
+          module: 'http://foo.com/node_modules/foo/foo.js',
           declaration: 'foo',
           isTypeOnly: false,
           attributes: []
@@ -89,7 +103,21 @@ describe('analyze', () => {
           }
         ]);
       });
-  
+      
+      it('dynamic import url', () => {
+        const result = imports('import("./foo.js")', 'http://foo.com/node_modules/foo/file.js');
+        assert.deepStrictEqual(result, [
+          {
+            kind: 'dynamic',
+            name: '',
+            declaration: '',
+            module: 'http://foo.com/node_modules/foo/foo.js',
+            isTypeOnly: false,
+            attributes: []
+          }
+        ]);
+      });
+
       it('dynamic import external', () => {
         const result = imports('import("foo")', 'file.js');
         assert.deepStrictEqual(result, [
@@ -103,7 +131,7 @@ describe('analyze', () => {
           }
         ]);
       });
-  
+
       it('dynamic import template literal', () => {
         const result = imports('import(`./foo.js`)', 'file.js');
         assert.deepStrictEqual(result, [
@@ -117,7 +145,7 @@ describe('analyze', () => {
           }
         ]);
       });
-  
+
       it('ignores dynamic import values template literal', () => {
         const result = imports('import(`./foo-${bar}-${baz}.js`)', 'file.js');
         assert.deepStrictEqual(result, [
@@ -131,12 +159,12 @@ describe('analyze', () => {
           }
         ]);
       });
-  
+
       it('ignores dynamic import values template literal', () => {
         const result = imports('import(foo)', 'file.js');
         assert.deepStrictEqual(result, []);
       });
-  
+
       it('ignores dynamic import values string concat', () => {
         const result = imports('import("./foo-" + bar + "-" + baz + ".js")', 'file.js');
         assert.deepStrictEqual(result, [
@@ -150,7 +178,7 @@ describe('analyze', () => {
           }
         ]);
       });
-  
+
       it('dynamic import local attributes', () => {
         const result = imports('import("./foo.js", { with: { type: "json" } })', 'file.js');
         assert.deepStrictEqual(result, [
@@ -160,7 +188,7 @@ describe('analyze', () => {
             declaration: '',
             module: 'foo.js',
             isTypeOnly: false,
-            attributes: [{name: 'type', value: 'json'}]
+            attributes: [{ name: 'type', value: 'json' }]
           }
         ]);
       });
@@ -318,7 +346,7 @@ describe('analyze', () => {
           kind: 'default',
           name: 'data',
           declaration: 'data',
-          attributes: [{name: 'type', value: 'json'}],
+          attributes: [{ name: 'type', value: 'json' }],
           module: 'data.json',
           isTypeOnly: false,
         }
@@ -383,6 +411,17 @@ describe('analyze', () => {
       ]);
     });
 
+    it('side-effect url', () => {
+      const result = imports('import "./foo.js";', 'http://foo.com/node_modules/foo/file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'side-effect',
+          module: 'http://foo.com/node_modules/foo/foo.js',
+          isTypeOnly: false,
+        }
+      ]);
+    });
+
     it('side-effect external', () => {
       const result = imports('import "foo";', 'file.js');
       assert.deepStrictEqual(result, [
@@ -401,6 +440,19 @@ describe('analyze', () => {
           kind: 'aggregate',
           declaration: '*',
           module: 'my-module.js',
+          name: 'foo',
+          isTypeOnly: false,
+        }
+      ]);
+    });
+
+    it('aggregate url', () => {
+      const result = imports('import * as foo from "./my-module.js"', 'http://foo.com/node_modules/foo/file.js');
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'aggregate',
+          declaration: '*',
+          module: 'http://foo.com/node_modules/foo/my-module.js',
           name: 'foo',
           isTypeOnly: false,
         }
@@ -539,7 +591,7 @@ describe('analyze', () => {
       });
     });
 
-    
+
 
     it('default', () => {
       const result = exports('export default foo;', 'file.js');
@@ -606,7 +658,7 @@ describe('analyze', () => {
     });
 
     it('export * local', () => {
-      const result = exports('export * from "./local.js"', 'file.js');
+      const result = exports('export * from "./local.js"', 'node_modules/file.js');
       assert.deepStrictEqual(result, [
         {
           kind: 'js',
@@ -787,5 +839,31 @@ describe('analyze', () => {
         }
       ]);
     });
+
+    it('reexport * from url', () => {
+      const result = exports(`
+        export * as foo from './bar.js';
+        `, 'http://foo.com/node_modules/foo/index.js');
+  
+      assert.deepStrictEqual(result, [
+        {
+          kind: 'js',
+          name: '*',
+          declaration: {
+            module: 'http://foo.com/node_modules/foo/bar.js',
+            name: 'foo'
+          }
+        }
+      ]);
+  
+      const result2 = exports(`export * as foo from '../bar.js';`, 'http://foo.com/node_modules/foo/index.js');
+      assert.equal(result2[0].declaration.module, 'http://foo.com/node_modules/bar.js');
+    });
+  
+    it('reexport url', () => {
+      const result = exports(`export { var1 } from './bar.js';`, 'http://foo.com/node_modules/foo/index.js');
+      assert.deepStrictEqual(result[0].declaration.module, 'http://foo.com/node_modules/foo/bar.js');
+    });
   });
+
 });

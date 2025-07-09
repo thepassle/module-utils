@@ -1,4 +1,5 @@
 import { normalize } from 'pathe';
+import { createPath } from '../utils.js';
 import { 
   hasDefaultImport, 
   hasNamedImport, 
@@ -171,7 +172,7 @@ export function imports(source, filePath = '') {
             name,
             declaration,
             attributes,
-            module,
+            module: createPath(module, filePath),
             isTypeOnly: false,
           };
           imports.push(importTemplate);
@@ -194,7 +195,7 @@ export function imports(source, filePath = '') {
           declaration: node.importClause?.name?.text,
           /** @type {'default'} */
           kind: "default",
-          module: normalize(node.moduleSpecifier.text),
+          module: createPath(node.moduleSpecifier.text, filePath),
           attributes,
           isTypeOnly: !!node?.importClause?.isTypeOnly,
         };
@@ -218,7 +219,7 @@ export function imports(source, filePath = '') {
             declaration: element?.propertyName?.text ?? element.name.text,
             /** @type {'named'} */
             kind: "named",
-            module: normalize(node.moduleSpecifier.text),
+            module: createPath(node.moduleSpecifier.text, filePath),
             isTypeOnly: !!node?.importClause?.isTypeOnly,
           };
           imports.push(importTemplate);
@@ -236,7 +237,7 @@ export function imports(source, filePath = '') {
           declaration: '*',
           /** @type {'aggregate'} */
           kind: "aggregate",
-          module: normalize(node.moduleSpecifier.text),
+          module: createPath(node.moduleSpecifier.text, filePath),
           isTypeOnly: !!node?.importClause?.isTypeOnly,
         };
         imports.push(importTemplate);
@@ -249,7 +250,7 @@ export function imports(source, filePath = '') {
         const importTemplate = {
           /** @type {'side-effect'} */
           kind: "side-effect",
-          module: normalize(node.moduleSpecifier.text),
+          module: createPath(node.moduleSpecifier.text, filePath),
           isTypeOnly: false,
         };
         imports.push(importTemplate);
