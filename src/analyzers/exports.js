@@ -1,4 +1,3 @@
-import { normalize } from "pathe";
 import {
   isReexport,
   hasNamedExports,

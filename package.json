@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node --watch index.js",
     "test": "node --test --experimental-test-coverage test/index.test.js",
-    "build": "esbuild imports.js exports.js barrel-file.js --bundle --outdir=browser --format=esm",
+    "build": "esbuild imports.js side-effects.js top-level-await.js exports.js barrel-file.js --bundle --outdir=browser --format=esm",
     "test:watch": "node --test --watch test/index.test.js",
     "lint:types": "tsc",
     "lint:types:watch": "tsc --watch",
@@ -18,32 +18,31 @@
     },
     "./imports.js": {
       "types": "./dist-types/imports.d.ts",
-      "browser": "./browser/imports.js",
       "default": "./imports.js"
     },
     "./exports.js": {
       "types": "./dist-types/exports.d.ts",
-      "browser": "./browser/exports.js",
       "default": "./exports.js"
     },
     "./barrel-file.js": {
       "types": "./dist-types/barrel-file.d.ts",
-      "browser": "./browser/barrel-file.js",
       "default": "./barrel-file.js"
     },
     "./top-level-await.js": {
       "types": "./dist-types/top-level-await.d.ts",
-      "browser": "./browser/top-level-await.js",
       "default": "./top-level-await.js"
     },
     "./side-effects.js": {
       "types": "./dist-types/side-effects.d.ts",
-      "browser": "./browser/side-effects.js",
       "default": "./side-effects.js"
     },
     "./utils.js": {
       "types": "./dist-types/utils.d.ts",
       "default": "./utils.js"
+    },
+    "./browser/*": {
+      "types": "./dist-types/*.d.ts",
+      "default": "./browser/*.js"
     }
   },
   "files": [
