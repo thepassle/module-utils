@@ -1,13 +1,15 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
-import { analyze } from '../index.js';
-import { imports } from '../src/analyzers/imports.js';
-import { exports } from '../src/analyzers/exports.js';
-import { barrelFile } from '../src/analyzers/barrel-file.js';
+import { describe, it } from "node:test";
+import assert from "node:assert";
+import { analyze } from "../index.js";
+import { topLevelAwait } from "../src/analyzers/top-level-await.js";
+import { sideEffects } from "../src/analyzers/side-effects.js";
+import { imports } from "../src/analyzers/imports.js";
+import { exports } from "../src/analyzers/exports.js";
+import { barrelFile } from "../src/analyzers/barrel-file.js";
 
-describe('analyze', () => {
+describe("analyze", () => {
   const s = 'export const foo = "bar";';
-  const f = 'file.js';
+  const f = "file.js";
 
   it('basic', () => {
     analyze(s, f, [{
@@ -34,6 +36,143 @@ describe('analyze', () => {
         assert.equal(ast.text, s);
       },
     }]);
+  });
+
+  describe("tla", () => {
+    it("simple top-level await", () => {
+      const result = topLevelAwait("await promise;", "file.js");
+      assert.equal(result, true);
+    });
+
+    it("top-level await with function call", () => {
+      const result = topLevelAwait('await fetch("/api/data");', "file.js");
+      assert.equal(result, true);
+    });
+
+    it("await in variable declaration", () => {
+      const result = topLevelAwait(
+        "const data = await getData();",
+        "file.js"
+      );
+      assert.equal(result, true);
+    });
+
+    it("await with method call", () => {
+      const result = topLevelAwait("await api.fetchUser();", "file.js");
+      assert.equal(result, true);
+    });
+
+    it("top-level await with dynamic import", () => {
+      const result = topLevelAwait(
+        'await import("./module.js");',
+        "file.js"
+      );
+      assert.equal(result, true);
+    });
+
+    it("no top-level await - async function", () => {
+      const result = topLevelAwait(
+        "async function foo() { await bar(); }",
+        "file.js"
+      );
+      assert.equal(result, false);
+    });
+
+    it("no top-level await - promise without await", () => {
+      const result = topLevelAwait(
+        'const promise = fetch("/api");',
+        "file.js"
+      );
+      assert.equal(result, false);
+    });
+  });
+
+  describe("side-effects", () => {
+    describe("global assignments", () => {
+      it("window assignments", () => {
+        const result = sideEffects('window.foo = "bar";', "file.js");
+        assert.equal(result, true);
+      });
+      it("window assignments deep", () => {
+        const result = sideEffects('window.foo.baz = "bar";', "file.js");
+        assert.equal(result, true);
+      });
+      it("window assignments function call", () => {
+        const result = sideEffects("window.foo = foo();", "file.js");
+        assert.equal(result, true);
+      });
+      it("window assignments method call", () => {
+        const result = sideEffects("window.foo = foo.bar();", "file.js");
+        assert.equal(result, true);
+      });
+      it("globalThis assignments", () => {
+        const result = sideEffects('globalThis.foo = "bar";', "file.js");
+        assert.equal(result, true);
+      });
+      it("globalThis assignments nested", () => {
+        const result = sideEffects('globalThis.foo.baz = "bar";', "file.js");
+        assert.equal(result, true);
+      });
+    });
+
+    describe("top level obj assignments", () => {
+      it("simple property assignment", () => {
+        const result = sideEffects("obj.prop = 42;", "file.js");
+        assert.equal(result, true);
+      });
+
+      it("nested property assignment", () => {
+        const result = sideEffects("foo.myApp.config = settings;", "file.js");
+        assert.equal(result, true);
+      });
+
+      it("element access assignment with string key", () => {
+        const result = sideEffects('obj["key"] = value;', "file.js");
+        assert.equal(result, true);
+      });
+
+      it("element access assignment with variable key", () => {
+        const result = sideEffects("arr[index] = newValue;", "file.js");
+        assert.equal(result, true);
+      });
+
+      it("computed property assignment with expression", () => {
+        const result = sideEffects(
+          'target[prop + "Suffix"] = data;',
+          "file.js"
+        );
+        assert.equal(result, true);
+      });
+    });
+
+    describe("top level function/method calls", () => {
+      it("top level fn call", () => {
+        const result = sideEffects("foo()", "file.js");
+        assert.equal(result, true);
+      });
+
+      it("top level method call", () => {
+        const result = sideEffects("foo.bar()", "file.js");
+        assert.equal(result, true);
+      });
+
+      it("top level nested method call", () => {
+        const result = sideEffects("foo.bar.baz()", "file.js");
+        assert.equal(result, true);
+      });
+
+      it("top level nested method call", () => {
+        const result = sideEffects(
+          `
+          function bla() {
+            foo.bar.baz()
+          }
+        `,
+          "file.js"
+        );
+        assert.equal(result, false);
+      });
+    });
   });
 
   describe('barrel file', () => {
@@ -74,7 +213,7 @@ describe('analyze', () => {
         }
       ]);
     });
-    
+
     it('default url', () => {
       const result = imports('import foo from "./foo.js";', 'http://foo.com/node_modules/foo/file.js');
       assert.deepStrictEqual(result, [
@@ -103,7 +242,7 @@ describe('analyze', () => {
           }
         ]);
       });
-      
+
       it('dynamic import url', () => {
         const result = imports('import("./foo.js")', 'http://foo.com/node_modules/foo/file.js');
         assert.deepStrictEqual(result, [
@@ -192,7 +331,6 @@ describe('analyze', () => {
           }
         ]);
       });
-
 
       it('dynamic import variable assignment', () => {
         const result = imports('const foo = import("./foo.js")', 'file.js');
@@ -591,8 +729,6 @@ describe('analyze', () => {
       });
     });
 
-
-
     it('default', () => {
       const result = exports('export default foo;', 'file.js');
       assert.deepStrictEqual(result, [
@@ -844,7 +980,7 @@ describe('analyze', () => {
       const result = exports(`
         export * as foo from './bar.js';
         `, 'http://foo.com/node_modules/foo/index.js');
-  
+
       assert.deepStrictEqual(result, [
         {
           kind: 'js',
@@ -855,15 +991,14 @@ describe('analyze', () => {
           }
         }
       ]);
-  
+
       const result2 = exports(`export * as foo from '../bar.js';`, 'http://foo.com/node_modules/foo/index.js');
       assert.equal(result2[0].declaration.module, 'http://foo.com/node_modules/bar.js');
     });
-  
+
     it('reexport url', () => {
       const result = exports(`export { var1 } from './bar.js';`, 'http://foo.com/node_modules/foo/index.js');
       assert.deepStrictEqual(result[0].declaration.module, 'http://foo.com/node_modules/foo/bar.js');
     });
   });
-
 });

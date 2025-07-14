@@ -1,0 +1,1 @@
+export { sideEffects } from './src/analyzers/side-effects.js';

@@ -1,0 +1,1 @@
+export { topLevelAwait } from './src/analyzers/top-level-await.js';

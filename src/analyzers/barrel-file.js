@@ -6,11 +6,11 @@ import { analyze } from "../../index.js";
  * @param {string} filePath
  * @param {{
  *  amountOfExportsToConsiderModuleAsBarrel: number
- * }} options
+ * }} [options]
  * @returns {boolean}
  */
 export function barrelFile(source, filePath, options) {
-  const amountOfExportsToConsiderModuleAsBarrel = options.amountOfExportsToConsiderModuleAsBarrel ?? 5;
+  const amountOfExportsToConsiderModuleAsBarrel = options?.amountOfExportsToConsiderModuleAsBarrel ?? 5;
   let declarations = 0;
   /** @type {import('./exports.js').Export[]} */
   const exports = [];

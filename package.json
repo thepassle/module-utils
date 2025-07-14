@@ -1,6 +1,6 @@
 {
   "name": "@thepassle/module-utils",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Module related utils",
   "scripts": {
     "start": "node --watch index.js",
@@ -30,6 +30,16 @@
       "types": "./dist-types/barrel-file.d.ts",
       "browser": "./browser/barrel-file.js",
       "default": "./barrel-file.js"
+    },
+    "./top-level-await.js": {
+      "types": "./dist-types/top-level-await.d.ts",
+      "browser": "./browser/top-level-await.js",
+      "default": "./top-level-await.js"
+    },
+    "./side-effects.js": {
+      "types": "./dist-types/side-effects.d.ts",
+      "browser": "./browser/side-effects.js",
+      "default": "./side-effects.js"
     },
     "./utils.js": {
       "types": "./dist-types/utils.d.ts",
